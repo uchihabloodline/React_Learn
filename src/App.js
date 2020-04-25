@@ -4,9 +4,11 @@ import './App.css';
 
 function App() {
   const name = 'Shivam'
+  const loading = true;
+  if(loading){
+    return <h1>Page Loading</h1>
+  }
   return (
-    <React.Fragment>
-      <h1>Hi, this h1 is inside a fragment to avoid encapsulation.. </h1>
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
@@ -23,7 +25,6 @@ function App() {
         </a>
       </header>
     </div>
-    </React.Fragment>
   );
 }
 
