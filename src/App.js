@@ -4,16 +4,13 @@ import './App.css';
 
 function App() {
   const name = 'Shivam'
-  const loading = true;
-  if(loading){
-    return <h1>Page Loading</h1>
-  }
+  const isLoggedIn = true;
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
-          Hello {name}
+          Hello {isLoggedIn?name:'World'}
         </p>
         <a
           className="App-link"
