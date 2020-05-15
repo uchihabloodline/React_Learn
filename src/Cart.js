@@ -5,7 +5,7 @@ class Cart extends React.Component {
     
     render(){
         return (
-            <div className="cart">
+            <div className='cart'>
                 <div>
                     <CartItem />
                     <CartItem />
