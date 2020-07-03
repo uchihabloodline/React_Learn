@@ -3,98 +3,169 @@ import './App.css';
 //import CartItem from './CartItem';
 import Cart from './Cart';
 import Navbar from './Navbar';
+import * as firebase from 'firebase';
 
 class App extends React.Component {
-  constructor () {
+  constructor() {
     super();
     this.state = {
-      products: [
-        {
-          price: 99,
-          title: 'Watch',
-          qty: 1,
-          img: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60',
-          id: 1
-        },
-        {
-          price: 999,
-          title: 'Mobile Phone',
-          qty: 13,
-          img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60',
-          id: 2
-        },
-        {
-          price: 99339,
-          title: 'Laptop',
-          qty: 10,
-          img: 'https://images.unsplash.com/photo-1504707748692-419802cf939d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=730&q=80',
-          id: 3
-        }
-      ]
+      products: [],
+      loading: true
+    };
+    this.db = firebase.firestore();
+  }
+
+  // componentDidMount() {
+  //   firebase
+  //     .firestore()
+  //     .collection("products")
+  //     .onSnapshot(snapshot => {
+  //       const products = snapshot.docs.map(doc => {
+  //         const data = doc.data();
+  //         data["id"] = doc.id;
+  //         return data;
+  //       });
+  //       this.setState({ products: products, loading: false });
+  //     });
+  // }
+
+    componentDidMount() {
+      this.db.collection("products").onSnapshot(snapshot => {
+        const products = snapshot.docs.map(doc => {
+          const data = doc.data();
+          data["id"] = doc.id;
+          return data;
+        });
+        this.setState({ products: products, loading: false });
+      });
     }
-    // this.increaseQuantity = this.increaseQuantity.bind(this);    //when using bind method or function keyword.
-    // this.testing();
-}
+
+    //Increase quantity function
     handleIncreaseQuantity = (product) => {
-      console.log('Heyy please inc the qty of ', product);
+      console.log('INC qty of product in DB ', product);
+      //getting current state
       const { products } = this.state;
+      //getting index of product in parameter
       const index = products.indexOf(product);
   
-      products[index].qty += 1;
+      // products[index].qty += 1;
   
-      this.setState({
-        products
+      // this.setState({
+      //   products
+      // })
+      
+      //getting product in DB for which info will update
+      const docRef = this.db.collection('products').doc(products[index].id);
+      //updating info in DB using the update() method.
+      docRef
+      .update({
+        qty: products[index].qty + 1,
       })
-    }
+      .then(()=>{
+        console.log("updated successfully");
+      })
+      .catch((err)=>{
+        console.log("Error in Increase qty func*** ",err);
+      });
+    };
 
+    //delete product method
     handleDeleteProduct = (id)=> {
       console.log("deleting product with id--> ",id);
-      const {products} = this.state;
-      const items = products.filter((item)=>item.id !== id);
-      this.setState({
-        products:items
-      })
-    }
+      //const {products} = this.state;
+      // const items = products.filter((item)=>item.id !== id);
+      // this.setState({
+      //   products:items
+      // })
+      const docRef = this.db.collection('products').doc(id);
+      docRef
+        .delete()
+          .then(()=>{
+            console.log("Deleted successfully!!");
+          })
+          .catch((err)=>{
+            console.log("Error in deletion method**** ",err);
+          })
+    };
 
+    //Decrease quantity method
     handleDecreaseQuantity = (product)=>{
       console.log("decrease qty-->current quantity-->",product.props);
       const {products} = this.state;
       const index = products.indexOf(product)
+      // if(products[index].qty > 0){
+      // products[index].qty -= 1
+      // }else{
+      //     return;
+      // }
+      // this.setState({
+      //   products,
+      // })
+      const docRef = this.db.collection('products').doc(products[index].id);
       if(products[index].qty > 0){
-      products[index].qty -= 1
-      }else{
-          return;
-      }
-      this.setState({
-        products
-      })
-    }
+        docRef.update({
+          qty: products[index].qty - 1
+        })
+        .then(()=>{
+          console.log("qty decreased successfully");
+        })
+        .catch((err)=>{
+          console.log("error in decrease qty method*** ",err);
+        });
+      };
+    };
 
+    //Cart count total method for navbar count detail
     getCartCount = ()=>{
       const {products} = this.state;
       let count = 0;
       products.forEach((product)=>{
         count = count + product.qty;
-      })
+      });
       return count;
     }
 
+    //total price method to calculate total price section at the end.
     getTotalPrice = () =>{
       const {products} = this.state;
       let totalprice = 0;
       products.forEach((product)=>{
+        console.log("price ",product.price);
         totalprice += (product.qty * product.price);
       })
       return totalprice;
     }
 
+    //SELECTIVE USAGE :- implemented to understand adding things to firebase DB
+    // addProduct = () =>{
+    //   this.db
+    //     .collection('products')
+    //     .add({
+    //       img:'',
+    //       title: 'washing machine',
+    //       price: 9000,
+    //       qty: 2
+    //     })
+    //     .then((docRef)=>{
+    //       docRef.get().then(snapshot =>{
+    //       console.log("product has been added ",docRef);
+    //     });
+    //   })
+    //     .catch(err =>{
+    //       console.log('Error in addProduct func****** ',err);
+    //     });
+    // };
+
   render(){
-    const products = this.state;
+    const {products,loading} = this.state;
     return (
       <div className="App">
         <Navbar 
         count = {this.getCartCount()}
         />
+        {/* <button onClick={this.addProduct} style={{padding:20, fontsize:20}}>
+          Add product
+        </button> */}
         <Cart 
         products = {products}
         onIncreaseQuantity = {this.handleIncreaseQuantity}
@@ -102,6 +173,7 @@ class App extends React.Component {
         onDeleteProduct = {this.handleDeleteProduct} />
         <div className="TotalPrice" style={{padding:10, fontSize:20}}>
           TOTAL_PRICE: {this.getTotalPrice()}
+          {loading && <h1>Loading Products...</h1>}
         </div>
       </div>
     );
@@ -110,3 +182,5 @@ class App extends React.Component {
 
 
 export default App;
+
+

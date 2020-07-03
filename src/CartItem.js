@@ -13,7 +13,7 @@ const CartItem = (props) => {
       </div>
       <div className="right-block">
         <div style={ { fontSize: 25 } }>{title}</div>
-        <div style={ { color: '#777' } }>Price:{price}</div>
+        <div style={ { color: '#777' } }>{price}</div>
         <div style={ { color: '#777' } }>Qty:{qty}</div>
         <div className="cart-item-actions">
           {/* Buttons */}
